@@ -1,9 +1,14 @@
-# [URL Shortener - Gophercises](https://courses.calhoun.io/lessons/les_goph_04) 
+# [URL Shortener - Gophercises](https://github.com/gophercises/urlshort) 
 
-- ✔️ Map handler
-- ✔️ YAML handler
-- ✔️ JSON handler
+> Learning go lang...
 
+- Main
+  - ✅ Map handler
+  - ✅ YAML handler
+- Bonus
+  - ✅ JSON handler
+  - ✅ Load maps from file. (YAML)
+  - ❌ DB Handler
 
 ## Exercise details
 

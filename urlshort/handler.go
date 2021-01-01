@@ -35,18 +35,35 @@ type pathsToUrlsInterface []struct {
 	URL  string
 }
 
-func (c *pathsToUrlsInterface) ParseYaml(data []byte) error {
-	if err := yaml.Unmarshal(data, c); err != nil {
-		return err
-	}
-	return nil
+type urlMap map[string]string
+
+func (c *pathsToUrlsInterface) info(kind string) {
+	log.Printf("Found %d url shortcuts (%s)\n", len(*c), kind)
+
 }
 
-func (c *pathsToUrlsInterface) ParseJSON(data []byte) error {
-	if err := json.Unmarshal(data, c); err != nil {
-		return err
+func (c *pathsToUrlsInterface) toMap() urlMap {
+	out := make(urlMap)
+	for _, cc := range *c {
+		out[cc.Path] = cc.URL
 	}
-	return nil
+	return out
+}
+
+func (c *pathsToUrlsInterface) ParseYAML(data []byte) (urlMap, error) {
+	if err := yaml.Unmarshal(data, c); err != nil {
+		return nil, err
+	}
+	c.info("YAML")
+	return c.toMap(), nil
+}
+
+func (c *pathsToUrlsInterface) ParseJSON(data []byte) (urlMap, error) {
+	if err := json.Unmarshal(data, c); err != nil {
+		return nil, err
+	}
+	c.info("JSON")
+	return c.toMap(), nil
 }
 
 // YAMLHandler will parse the provided YAML and then return
@@ -62,17 +79,12 @@ func (c *pathsToUrlsInterface) ParseJSON(data []byte) error {
 //
 // The only errors that can be returned all related to having
 // invalid YAML data.
-func YAMLHandler(yml []byte, fallback http.Handler) (http.Handler, error) {
+func YAMLHandler(data []byte, fallback http.Handler) (http.Handler, error) {
 	var pathsToUrlsYaml pathsToUrlsInterface
 
-	if err := pathsToUrlsYaml.ParseYaml(yml); err != nil {
+	pathsToUrls, err := pathsToUrlsYaml.ParseYAML(data)
+	if err != nil {
 		return nil, err
-	}
-	log.Println(fmt.Sprintf("Found %d url shortcuts", len(pathsToUrlsYaml)))
-
-	pathsToUrls := make(map[string]string)
-	for _, el := range pathsToUrlsYaml {
-		pathsToUrls[el.Path] = el.URL
 	}
 
 	return MapHandler(pathsToUrls, "YAML", fallback), nil
@@ -99,17 +111,12 @@ func YAMLHandler(yml []byte, fallback http.Handler) (http.Handler, error) {
 //
 // The only errors that can be returned all related to having
 // invalid JSON data.
-func JSONHandler(jsonBytes []byte, fallback http.Handler) (http.Handler, error) {
+func JSONHandler(data []byte, fallback http.Handler) (http.Handler, error) {
 	var pathsToUrlsJSON pathsToUrlsInterface
 
-	if err := pathsToUrlsJSON.ParseJSON(jsonBytes); err != nil {
+	pathsToUrls, err := pathsToUrlsJSON.ParseJSON(data)
+	if err != nil {
 		return nil, err
-	}
-	log.Println(fmt.Sprintf("Found %d url shortcuts", len(pathsToUrlsJSON)))
-
-	pathsToUrls := make(map[string]string)
-	for _, el := range pathsToUrlsJSON {
-		pathsToUrls[el.Path] = el.URL
 	}
 
 	return MapHandler(pathsToUrls, "JSON", fallback), nil
