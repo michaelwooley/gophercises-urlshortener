@@ -1,6 +1,8 @@
 package urlshort
 
 import (
+	"fmt"
+	"log"
 	"net/http"
 )
 
@@ -10,9 +12,18 @@ import (
 // that each key in the map points to, in string format).
 // If the path is not provided in the map, then the fallback
 // http.Handler will be called instead.
-func MapHandler(pathsToUrls map[string]string, fallback http.Handler) http.HandlerFunc {
-	//	TODO: Implement this...
-	return nil
+func MapHandler(pathsToUrls map[string]string, fallback http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		prefix := r.URL.Path
+		val, ok := pathsToUrls[r.URL.Path]
+		if !ok {
+			log.Println(fmt.Sprintf("Prefix `%s` NOT found. Redirecting to default.", prefix))
+			fallback.ServeHTTP(w, r)
+		} else {
+			log.Println(fmt.Sprintf("Prefix `%s` found. Redirecting to: %s", prefix, val))
+			http.Redirect(w, r, val, http.StatusSeeOther)
+		}
+	})
 }
 
 // YAMLHandler will parse the provided YAML and then return
