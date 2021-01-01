@@ -1,17 +1,20 @@
 package main
 
 import (
+	"flag"
 	"fmt"
+	"io/ioutil"
+	"log"
 	"net/http"
 
 	"github.com/michaelwooley/gophercises-urlshortener/urlshort"
 )
 
-var yaml = `
-- path: /urlshort
-  url: https://github.com/gophercises/urlshort
-- path: /urlshort-final
-  url: https://github.com/gophercises/urlshort/tree/solution`
+// var yaml = `
+// - path: /urlshort
+//   url: https://github.com/gophercises/urlshort
+// - path: /urlshort-final
+//   url: https://github.com/gophercises/urlshort/tree/solution`
 
 var jsonExample = `
 [
@@ -26,7 +29,18 @@ var jsonExample = `
 ]
 `
 
+var yamlFilename string
+
+func init() {
+	const defaultYAML = "default-yaml.yml"
+
+	flag.StringVar(&yamlFilename, "yaml-filename", defaultYAML, "Load this yaml file for use in ")
+	flag.StringVar(&yamlFilename, "f", defaultYAML, "Shorthand for `-yaml-filename`")
+}
+
 func main() {
+	flag.Parse()
+
 	mux := defaultMux()
 
 	// Build the MapHandler using the mux as the fallback
@@ -36,10 +50,9 @@ func main() {
 	}
 	mapHandler := urlshort.MapHandler(pathsToUrls, "default", mux)
 
-	// Build the YAMLHandler using the mapHandler as the
-	// fallback
-
-	yamlHandler, err := urlshort.YAMLHandler([]byte(yaml), mapHandler)
+	// Build the YAMLHandler using the mapHandler as the fallback
+	yaml := readFromFile(yamlFilename)
+	yamlHandler, err := urlshort.YAMLHandler(yaml, mapHandler)
 	if err != nil {
 		panic(err)
 	}
@@ -60,4 +73,13 @@ func defaultMux() *http.ServeMux {
 
 func hello(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintln(w, "Hello, world!")
+}
+
+func readFromFile(filename string) []byte {
+	log.Printf("Reading file `%s`\n", filename)
+	file, err := ioutil.ReadFile(filename)
+	if err != nil {
+		log.Fatal(err)
+	}
+	return file
 }
