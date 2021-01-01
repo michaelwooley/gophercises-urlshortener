@@ -1,5 +1,10 @@
 # [URL Shortener - Gophercises](https://courses.calhoun.io/lessons/les_goph_04) 
 
+- ✔️ Map handler
+- ✔️ YAML handler
+- ✔️ JSON handler
+
+
 ## Exercise details
 
 The goal of this exercise is to create an [http.Handler](https://golang.org/pkg/net/http/#Handler) that will look at the path of any incoming web request and determine if it should redirect the user to a new page, much like URL shortener would.
@@ -28,7 +33,7 @@ func YAMLHandler(yaml []byte, fallback http.Handler) (http.HandlerFunc, error) {
 But in order for this to work you will need to create functions like `parseYAML` and `buildMap` on your own. This should give you ample experience working with YAML data.
 
 
-## Bonus
+### Bonus
 
 As a bonus exercises you can also...
 

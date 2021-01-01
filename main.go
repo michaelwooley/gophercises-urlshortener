@@ -13,6 +13,19 @@ var yaml = `
 - path: /urlshort-final
   url: https://github.com/gophercises/urlshort/tree/solution`
 
+var jsonExample = `
+[
+	{
+		"path": "/json",
+		"url": "https://www.json.org/json-en.html"
+	},
+	{
+		"path": "/geojson",
+		"url": "https://tools.ietf.org/html/rfc7946"
+	}
+]
+`
+
 func main() {
 	mux := defaultMux()
 
@@ -30,8 +43,13 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
+
+	jsonHandler, err := urlshort.JSONHandler([]byte(jsonExample), yamlHandler)
+	if err != nil {
+		panic(err)
+	}
 	fmt.Println("Starting the server on :8080")
-	http.ListenAndServe(":8080", yamlHandler)
+	http.ListenAndServe(":8080", jsonHandler)
 }
 
 func defaultMux() *http.ServeMux {
